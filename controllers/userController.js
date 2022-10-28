@@ -1,4 +1,6 @@
 const { User } = require('../models');
+const { comparePassword } = require('../helper/bcrypt');
+const { generateToken } = require('../helper/jwt');
 
 class userController {
     static async register(req, res) {
@@ -42,6 +44,37 @@ class userController {
                     phone_number: user.dataValues.phone_number
                 }
             })
+        } catch (error) {
+            const errObj = {};
+            error.errors.map(error => {
+                errObj[error.path] = error.message;
+            })
+            return res.status(500).json(errObj);
+        }
+    }
+
+    static async login(req, res) {
+        try {
+            const { email, password } = req.body;
+            const dataLogin = await User.findOne({
+                where: {
+                    email: email
+                }
+            })
+
+            if (dataLogin) {
+                const isCorrect = comparePassword(password, dataLogin.password);
+                if (isCorrect) {
+                    const token = generateToken({
+                        id: dataLogin.id,
+                    })
+                    return res.status(200).json({ token: token })
+                } else {
+                    return res.status(500).json({ message: 'Wrong password' })
+                }
+            } else {
+                return res.status(500).json({ message: 'Data not found' })
+            }
         } catch (error) {
             const errObj = {};
             error.errors.map(error => {
