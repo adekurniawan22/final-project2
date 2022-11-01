@@ -83,6 +83,46 @@ class userController {
             return res.status(500).json(errObj);
         }
     }
+
+    static async editUser(req, res) {
+        try {
+            const userId = req.params.userId;
+            const { email, full_name, username, profile_image_url, age, phone_number } = req.body;
+
+            const data = await User.findAll();
+            for (var key in data) {
+                if (email == data[key].email) {
+                    return res.status(500).json({
+                        message: 'This email is already in use '
+                    })
+                }
+            }
+            for (var key in data) {
+                if (username == data[key].username) {
+                    return res.status(500).json({
+                        message: 'This username is already in use '
+                    })
+                }
+            }
+
+            await User.update({ email, full_name, username, profile_image_url, age, phone_number }, { where: { id: userId } })
+            const user = await User.findOne({ where: { id: userId }, attributes: { exclude: ['id', 'password', 'createdAt', 'updatedAt'] } });
+
+            return res.status(200).json({ user })
+        } catch (error) {
+            return res.status(500).json({ error })
+        }
+    }
+
+    static async deleteUser(req, res) {
+        try {
+            const userId = req.params.userId;
+            await User.destroy({ where: { id: userId } })
+            return res.status(200).json({ message: 'Your account has been succesfully deleted' })
+        } catch (error) {
+            return res.status(500).json({ error })
+        }
+    }
 }
 
 module.exports = userController;
