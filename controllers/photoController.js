@@ -39,7 +39,7 @@ class photoController {
             })
             return res.status(200).json(data);
         } catch (error) {
-            return res.status(200).json({ error });
+            return res.status(500).json(error);
         }
     }
 
@@ -57,7 +57,7 @@ class photoController {
             const dataUpdate = await Photo.findOne({ where: { id: req.params.photoId } })
             return res.status(200).json({ photo: dataUpdate })
         } catch (error) {
-            return res.status(500).json({ error })
+            return res.status(500).json(error);
         }
     }
 
@@ -66,7 +66,7 @@ class photoController {
             await Photo.destroy({ where: { id: req.params.photoId } })
             return res.status(200).json({ message: 'Your photo has been successfully deleted' })
         } catch (error) {
-            return res.status(500).json({ error })
+            return res.status(500).json(error);
         }
     }
 }

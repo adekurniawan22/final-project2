@@ -110,7 +110,7 @@ class userController {
 
             return res.status(200).json({ user })
         } catch (error) {
-            return res.status(500).json({ error })
+            return res.status(200).json(error);
         }
     }
 
@@ -120,7 +120,7 @@ class userController {
             await User.destroy({ where: { id: userId } })
             return res.status(200).json({ message: 'Your account has been succesfully deleted' })
         } catch (error) {
-            return res.status(500).json({ error })
+            return res.status(200).json(error);
         }
     }
 }
