@@ -10,14 +10,14 @@ class userController {
             const data = await User.findAll();
             for (var key in data) {
                 if (email == data[key].email) {
-                    return res.status(500).json({
+                    return res.status(400).json({
                         message: 'This email is already in use '
                     })
                 }
             }
             for (var key in data) {
                 if (username == data[key].username) {
-                    return res.status(500).json({
+                    return res.status(400).json({
                         message: 'This username is already in use '
                     })
                 }
@@ -49,38 +49,46 @@ class userController {
             error.errors.map(error => {
                 errObj[error.path] = error.message;
             })
-            return res.status(500).json(errObj);
+            return res.status(500).json({ message: errObj });
         }
     }
 
     static async login(req, res) {
         try {
             const { email, password } = req.body;
-            const dataLogin = await User.findOne({
-                where: {
-                    email: email
-                }
-            })
-
-            if (dataLogin) {
-                const isCorrect = comparePassword(password, dataLogin.password);
-                if (isCorrect) {
-                    const token = generateToken({
-                        id: dataLogin.id,
-                    })
-                    return res.status(200).json({ token: token })
-                } else {
-                    return res.status(500).json({ message: 'Wrong password' })
+            if (!email || !password) {
+                throw {
+                    code: 400,
+                    message: `Email and password cannot be empty`
                 }
             } else {
-                return res.status(500).json({ message: 'Data not found' })
+                const dataLogin = await User.findOne({
+                    where: {
+                        email: email
+                    }
+                });
+                if (dataLogin) {
+                    const isCorrect = comparePassword(password, dataLogin.password);
+                    if (isCorrect) {
+                        const token = generateToken({
+                            id: dataLogin.id,
+                            email: dataLogin.email,
+                            username: dataLogin.username
+                        })
+                        return res.status(200).json({ token: token })
+                    } else {
+                        return res.status(400).json({ message: 'Wrong password' })
+                    }
+                } else {
+                    throw {
+                        code: 404,
+                        message: `Data not found`
+                    }
+                }
             }
+
         } catch (error) {
-            const errObj = {};
-            error.errors.map(error => {
-                errObj[error.path] = error.message;
-            })
-            return res.status(500).json(errObj);
+            return res.status(500).json({ message: error.message });
         }
     }
 
@@ -92,14 +100,14 @@ class userController {
             const data = await User.findAll();
             for (var key in data) {
                 if (email == data[key].email) {
-                    return res.status(500).json({
+                    return res.status(400).json({
                         message: 'This email is already in use '
                     })
                 }
             }
             for (var key in data) {
                 if (username == data[key].username) {
-                    return res.status(500).json({
+                    return res.status(400).json({
                         message: 'This username is already in use '
                     })
                 }
@@ -110,7 +118,7 @@ class userController {
 
             return res.status(200).json({ user })
         } catch (error) {
-            return res.status(200).json(error);
+            return res.status(500).json({ message: error.message });
         }
     }
 
@@ -120,7 +128,7 @@ class userController {
             await User.destroy({ where: { id: userId } })
             return res.status(200).json({ message: 'Your account has been succesfully deleted' })
         } catch (error) {
-            return res.status(200).json(error);
+            return res.status(500).json({ message: error.message });
         }
     }
 }
